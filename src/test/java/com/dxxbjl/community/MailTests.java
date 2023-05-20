@@ -27,6 +27,7 @@ public class MailTests {
     }
 
     @Test
+    //
     public void testHtmlMail(){
         Context context =new Context();
         context.setVariable("username","community");
