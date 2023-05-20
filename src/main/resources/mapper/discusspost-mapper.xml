@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dxxbjl.community.dao.DiscussPostMapper">
+
+    <!--  重复字段复用 -->
+    <sql id="selectField">
+        id,user_id,title,content,type,status,create_time,comment_count,score
+    </sql>
+
+    <!-- 查询帖子
+         id是接口名，resultType是接口的返回类型
+         返回类型为List<DiscussPost>  ，List<>可以自动解析，所以返回类型可以只写DiscussPost
+         status != 2  0为正常，1为精华，2为拉黑，不显示拉黑的帖子
+         传入的参数userID，可能是0也可能不是0或者不传参数，需要动态拼接；
+
+         <if test="userId != 0">    当userId不为0的时候拼接到sql中
+            and user_id = #{userId}
+         </if>
+
+         分页
+         limit #{offset},#{limit}   起始行、显示行目数
+      -->
+    <select id="selectDiscussPosts" resultType="DiscussPost">
+        select <include refid="selectField"></include>
+        from discuss_post
+        where status != 2
+        <if test="userId != 0">
+            and user_id = #{userId}
+        </if>
+        order by type desc,create_time desc
+        limit #{offset},#{limit}
+    </select>
+
+
+    <!--
+      查询帖子的行数
+      -->
+
+    <select id="selectDiscussPostRows" resultType="int">
+        select count(id)
+        from discuss_post
+        where status != 2
+        <if test="userId != 0">
+            and user_id = #{userId}
+        </if>
+    </select>
+</mapper>
