@@ -74,5 +74,6 @@ public class MapperTests {
         int rows = discussPostMapper.selectDiscussPostRows(149);
         System.out.println(rows);
         System.out.println("test");
+        System.out.println("test2");
     }
 }
