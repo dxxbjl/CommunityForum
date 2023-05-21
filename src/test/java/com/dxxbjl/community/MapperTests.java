@@ -1,8 +1,10 @@
 package com.dxxbjl.community;
 
 import com.dxxbjl.community.dao.DiscussPostMapper;
+import com.dxxbjl.community.dao.LoginTicketMapper;
 import com.dxxbjl.community.dao.UserMapper;
 import com.dxxbjl.community.entity.DiscussPost;
+import com.dxxbjl.community.entity.LoginTicket;
 import com.dxxbjl.community.entity.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +26,9 @@ public class MapperTests {
 
     @Autowired
     private DiscussPostMapper discussPostMapper;
+
+    @Autowired
+    private LoginTicketMapper loginTicketMapper;
 
     @Test
     public void testSelectUser(){
@@ -75,5 +80,26 @@ public class MapperTests {
         System.out.println(rows);
         System.out.println("test");
         System.out.println("test");
+    }
+
+    @Test
+    public void testInsertLoginTicket(){
+        LoginTicket loginTicket = new LoginTicket();
+        loginTicket.setUserId(101);
+        loginTicket.setTicket("aaaaa");
+        loginTicket.setStatus(0);
+        loginTicket.setExpired(new Date(System.currentTimeMillis() +1000*60*10));//当前时间往后10分钟
+
+        loginTicketMapper.insertLoginTicket(loginTicket);
+    }
+
+    @Test
+    public void testSelectLoginTicket(){
+        LoginTicket loginTicket = loginTicketMapper.selectByTicket("aaaaa");
+        System.out.println(loginTicket);
+
+        loginTicketMapper.updateStatus("aaaaa",1);
+        loginTicket = loginTicketMapper.selectByTicket("aaaaa");
+        System.out.println(loginTicket);
     }
 }

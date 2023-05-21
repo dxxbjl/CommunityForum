@@ -4,16 +4,20 @@ import com.dxxbjl.community.entity.User;
 import com.dxxbjl.community.service.UserService;
 import com.dxxbjl.community.util.CommunityConstant;
 import com.google.code.kaptcha.Producer;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
@@ -32,6 +36,9 @@ public class LoginController implements CommunityConstant {
 
     @Autowired
     private Producer kaptchaProducer;
+
+    @Value("${server.servlet.context-path}")
+    private String contextPath;
 
     /**
      * 访问注册页
@@ -66,6 +73,13 @@ public class LoginController implements CommunityConstant {
         }
     }
 
+    /**
+     * 激活邮件
+     * @param model
+     * @param userId
+     * @param code
+     * @return
+     */
     @RequestMapping(path = "/activation/{userId}/{code}",method = RequestMethod.GET)
     public String activation(Model model, @PathVariable("userId")int userId,@PathVariable("code") String code){
         int result = userService.activation(userId, code);
@@ -82,6 +96,11 @@ public class LoginController implements CommunityConstant {
         return "/site/operate-result";
     }
 
+    /**
+     * 验证码
+     * @param response
+     * @param session
+     */
     @RequestMapping(path = "/kaptcha",method = RequestMethod.GET)
     public void getKaptcha(HttpServletResponse response, HttpSession session){
         //生成验证码
@@ -99,5 +118,56 @@ public class LoginController implements CommunityConstant {
         }catch (IOException e){
             logger.error("响应验证码失败："+e.getMessage());
         }
+    }
+
+    /**
+     * 登录
+     * @param username
+     * @param password
+     * @param code
+     * @param rememberme
+     * @param model
+     * @param session
+     * @param response
+     * @return
+     */
+    @RequestMapping(path = "/login",method = RequestMethod.POST)
+    public String login(String username,String password,String code,boolean rememberme,
+                        Model model,HttpSession session,HttpServletResponse response){
+        //获取验证码
+        String kaptcha = (String) session.getAttribute("kaptcha");
+        //equalsIgnoreCase忽略大小写
+        if(StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)){
+            model.addAttribute("codeMsg","验证码不正确");
+            return "/site/login";
+        }
+
+        //检查账号密码
+        //看是否点击记住我
+        int expriedSeconds = rememberme?REMEMBER_EXPIRED_SECONDS : DEFAULT_EXPEIRED_SECONDS;
+        Map<String,Object> map = userService.login(username,password,expriedSeconds);
+        if(map.containsKey("ticket")){
+            Cookie cookie = new Cookie("ticket",map.get("ticket").toString());
+            cookie.setPath(contextPath);
+            cookie.setMaxAge(expriedSeconds);
+            response.addCookie(cookie);
+            return "redirect:/index";
+        }else {
+            model.addAttribute("usermameMsg",map.get("usernameMsg"));
+            model.addAttribute("passwordMsg",map.get("passwordMsg"));
+            return "/site/login";
+        }
+    }
+
+
+    /**
+     * 退出登录(让凭证失效)
+     * @param ticket
+     * @return
+     */
+    @RequestMapping(path = "/logout",method =RequestMethod.GET)
+    public String logout(@CookieValue("ticket") String ticket){
+        userService.logout(ticket);
+        return "redirect:/login";//退出后跳转到登录页
     }
 }

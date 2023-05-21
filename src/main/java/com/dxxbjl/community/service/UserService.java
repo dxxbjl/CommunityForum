@@ -1,6 +1,8 @@
 package com.dxxbjl.community.service;
 
+import com.dxxbjl.community.dao.LoginTicketMapper;
 import com.dxxbjl.community.dao.UserMapper;
+import com.dxxbjl.community.entity.LoginTicket;
 import com.dxxbjl.community.entity.User;
 import com.dxxbjl.community.util.CommunityConstant;
 import com.dxxbjl.community.util.CommunityUtil;
@@ -27,7 +29,10 @@ public class UserService implements CommunityConstant {
     private MailClient mailClient;
 
     @Autowired
-    TemplateEngine templateEngine;
+    private TemplateEngine templateEngine;
+
+    @Autowired
+    private LoginTicketMapper loginTicketMapper;
 
     //注入本机域名
     @Value("${community.path.domain}")
@@ -114,5 +119,58 @@ public class UserService implements CommunityConstant {
         }else {
             return ACTIVATION_FAILURE;
         }
+    }
+
+    public Map<String,Object> login(String username,String password,long expiredSeconds){
+        Map<String,Object> map =new HashMap<>();
+
+        //空值处理
+        if(StringUtils.isBlank(username)){
+            map.put("usernameMsg","账号不能为空");
+            return map;
+        }
+        if(StringUtils.isBlank(password)){
+            map.put("passwordMsg","密码不能为空");
+            return map;
+        }
+
+        //验证账号
+        User user = userMapper.selectByName(username);
+        if(user == null){
+            map.put("usernameMsg","该账号不存在！");
+            return map;
+        }
+
+        //验证状态
+        if(user.getStatus() == 0){
+            map.put("usernameMsg","该账号未激活！");
+            return map;
+        }
+
+        //验证密码
+        password = CommunityUtil.md5(password + user.getSalt()); //拼接salt后进行加密
+        if(!user.getPassword().equals(password)){
+            map.put("passwordMsg","密码不正确！");
+            return map;
+        }
+
+        //生成登录凭证
+        LoginTicket loginTicket =new LoginTicket();
+        loginTicket.setUserId(user.getId());
+        loginTicket.setTicket(CommunityUtil.generateUUID());
+        loginTicket.setStatus(0);
+        loginTicket.setExpired(new Date(System.currentTimeMillis() + expiredSeconds*1000));//当前时间往后多少秒
+        loginTicketMapper.insertLoginTicket(loginTicket);
+
+        map.put("ticket",loginTicket.getTicket());
+        return map;
+    }
+
+    /**
+     * 退出登录，将登录凭证设置为无效
+     * @param ticket
+     */
+    public void logout(String ticket){
+        loginTicketMapper.updateStatus(ticket,1);
     }
 }
