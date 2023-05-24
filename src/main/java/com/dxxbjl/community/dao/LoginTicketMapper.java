@@ -28,7 +28,13 @@ public interface LoginTicketMapper {
 
      //更新状态
     @Update({
-            "update login_ticket set status=#{status} where ticket =#{ticket}"
+//            "update login_ticket set status=#{status} where ticket =#{ticket}"
+            "<script>",
+            "update login_ticket set status=#{status} where ticket=#{ticket} ",
+            "<if test=\"ticket!=null\"> ",
+            "and 1=1 ",
+            "</if>",
+            "</script>"
     })
      int updateStatus(String ticket,int status);
 }

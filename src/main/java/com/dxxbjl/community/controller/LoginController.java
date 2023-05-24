@@ -117,7 +117,7 @@ public class LoginController implements CommunityConstant {
             OutputStream os = response.getOutputStream();
             ImageIO.write(image,"png",os);
         }catch (IOException e){
-            logger.error("响应验证码失败："+e.getMessage());
+           logger.error("响应验证码失败："+e.getMessage());
         }
     }
 
@@ -154,7 +154,7 @@ public class LoginController implements CommunityConstant {
             response.addCookie(cookie);
             return "redirect:/index";
         }else {
-            model.addAttribute("usermameMsg",map.get("usernameMsg"));
+            model.addAttribute("usernameMsg",map.get("usernameMsg"));
             model.addAttribute("passwordMsg",map.get("passwordMsg"));
             return "/site/login";
         }
