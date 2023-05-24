@@ -1,5 +1,6 @@
 package com.dxxbjl.community.controller;
 
+import com.dxxbjl.community.annotation.LoginRequired;
 import com.dxxbjl.community.entity.User;
 import com.dxxbjl.community.service.UserService;
 import com.dxxbjl.community.util.CommunityUtil;
@@ -44,12 +45,24 @@ public class UserController {
     @Autowired
     private HostHolder hostHolder;
 
+    /**
+     * 进入设置头像页
+     * @return setting.html
+     */
+    @LoginRequired
     @RequestMapping(path = "/setting",method = RequestMethod.GET)
     public String getSettingPage(){
         //返回setting.html页面
         return "/site/setting";
     }
 
+    /**
+     * 上传头像
+     * @param headerImage
+     * @param model
+     * @return
+     */
+    @LoginRequired
     @RequestMapping(path = "/upload",method = RequestMethod.POST)
     public String uploadHeader(MultipartFile headerImage, Model model){
         if(headerImage == null){
@@ -84,6 +97,11 @@ public class UserController {
         return "redirect:/index";
     }
 
+    /**
+     * 获取头像
+     * @param fileName
+     * @param response
+     */
     @RequestMapping(path = "/header/{fileName}",method = RequestMethod.GET)
     public void getHeader(@PathVariable("fileName") String fileName, HttpServletResponse response){
         //服务器存放的路径

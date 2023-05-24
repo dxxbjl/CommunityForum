@@ -1,6 +1,7 @@
 package com.dxxbjl.community.config;
 
 import com.dxxbjl.community.controller.interceptor.AlphaInterceptor;
+import com.dxxbjl.community.controller.interceptor.LoginRequireInterceptor;
 import com.dxxbjl.community.controller.interceptor.LoginTicketInterceptor;
 import com.dxxbjl.community.dao.LoginTicketMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private LoginTicketInterceptor loginTicketInterceptor;
 
+    @Autowired
+    private LoginRequireInterceptor loginRequireInterceptor;
+
+    /**
+     * 拦截器配置
+     * @param registry
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         //不拦截静态资源
@@ -27,6 +35,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         //拦截器,除了静态资源拦截所有的
         registry.addInterceptor(loginTicketInterceptor)
+                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");
+
+        //拦截器,除了静态资源拦截所有的带登陆注解@loginRequire的方法
+        registry.addInterceptor(loginRequireInterceptor)
                 .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");
 
     }
