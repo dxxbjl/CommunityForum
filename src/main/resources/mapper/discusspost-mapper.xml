@@ -56,4 +56,10 @@
         values (#{userId},#{title},#{content},#{type},#{status},#{createTime},#{commentCount},#{score})
     </insert>
 
+    <!--查看帖子详情-->
+    <select id="selectDiscussPostById" resultType="DiscussPost">
+        select <include refid="insertField"></include>
+        from discuss_post
+        where id = #{id}
+    </select>
 </mapper>

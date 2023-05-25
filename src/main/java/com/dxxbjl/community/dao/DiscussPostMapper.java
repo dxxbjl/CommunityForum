@@ -29,4 +29,11 @@ public interface DiscussPostMapper {
      * @return 返回增加的行数
      */
     int insertDiscussPost(DiscussPost discussPost);
+
+    /**
+     * 查询帖子详情
+     * @param id
+     * @return
+     */
+    DiscussPost selectDiscussPostById(int id);
 }
