@@ -58,7 +58,7 @@
 
     <!--查看帖子详情-->
     <select id="selectDiscussPostById" resultType="DiscussPost">
-        select <include refid="insertField"></include>
+        select <include refid="selectField"></include>
         from discuss_post
         where id = #{id}
     </select>
