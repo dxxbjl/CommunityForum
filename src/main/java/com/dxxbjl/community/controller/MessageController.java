@@ -6,6 +6,7 @@ import com.dxxbjl.community.entity.Page;
 import com.dxxbjl.community.entity.User;
 import com.dxxbjl.community.service.MessageService;
 import com.dxxbjl.community.service.UserService;
+import com.dxxbjl.community.util.CommunityUtil;
 import com.dxxbjl.community.util.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,12 +14,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.thymeleaf.spring5.util.SpringRequestUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 public class MessageController {
@@ -95,6 +94,13 @@ public class MessageController {
 
         //查询私信的目标
         model.addAttribute("target",getLetterTarget(conversationId));
+
+        //设置已读
+        List<Integer> ids = getLetterIds(lettersList);
+        if(!ids.isEmpty()){
+            messageService.readMessage(ids);
+        }
+
         return "/site/letter-detail";
     }
 
@@ -108,5 +114,49 @@ public class MessageController {
         }else {
             return userService.findUserById(id0);
         }
+    }
+
+    private List<Integer> getLetterIds (List<Message> letterList){
+        List<Integer> ids = new ArrayList<>();
+
+        if(letterList != null){
+            for (Message message : letterList) {
+                if(hostHolder.getUser().getId() == message.getToId() && message.getStatus() == 0){
+                    ids.add(message.getId());
+                }
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * 发送私信
+     * @param toName 发给的是某个人，接收到的是用户名，然后需要通过用户名获取用户id
+     * @param content
+     * @return
+     */
+    @RequestMapping(path = "/letter/send",method = RequestMethod.POST)
+    @ResponseBody
+    public String sendLetter(String toName,String content){
+        User target = userService.findUserByName(toName);
+
+        if(target == null){
+            return CommunityUtil.getJSONString(1,"目标用户不存在");
+        }
+
+        Message message = new Message();
+        message.setFromId(hostHolder.getUser().getId());
+        message.setToId(target.getId());
+        if(message.getFromId() < message.getToId()){
+            message.setConversationId(message.getFromId() + "_" +message.getToId());
+        }else {
+            message.setConversationId(message.getToId() + "_" +message.getFromId());
+        }
+        message.setContent(content);
+        message.setCreateTime(new Date());
+        messageService.addMessage(message);
+
+        //0是成功
+        return CommunityUtil.getJSONString(0);
     }
 }
