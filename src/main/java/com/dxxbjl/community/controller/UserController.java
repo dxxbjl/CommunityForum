@@ -2,6 +2,7 @@ package com.dxxbjl.community.controller;
 
 import com.dxxbjl.community.annotation.LoginRequired;
 import com.dxxbjl.community.entity.User;
+import com.dxxbjl.community.service.LikeService;
 import com.dxxbjl.community.service.UserService;
 import com.dxxbjl.community.util.CommunityUtil;
 import com.dxxbjl.community.util.HostHolder;
@@ -15,6 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
@@ -44,6 +46,9 @@ public class UserController {
 
     @Autowired
     private HostHolder hostHolder;
+
+    @Autowired
+    private LikeService likeService;
 
     /**
      * 进入设置头像页
@@ -126,5 +131,19 @@ public class UserController {
         }
     }
 
+    //个人主页
+    @RequestMapping(path = "/profile/{userId}",method = RequestMethod.GET)
+    public String getProfilePage(@PathVariable("userId") int userId,Model model){
+        User user = userService.findUserById(userId);
+        if(user == null){
+            throw new RuntimeException("该用户不存在！");
+        }
 
+        //用户
+        model.addAttribute("user",user);
+        //点赞数量
+        int likeCount = likeService.findUserLikeCount(userId);
+        model.addAttribute("likeCount",likeCount);
+        return "/site/profile";
+    }
 }

@@ -4,7 +4,9 @@ import com.dxxbjl.community.entity.DiscussPost;
 import com.dxxbjl.community.entity.Page;
 import com.dxxbjl.community.entity.User;
 import com.dxxbjl.community.service.DiscussPostService;
+import com.dxxbjl.community.service.LikeService;
 import com.dxxbjl.community.service.UserService;
+import com.dxxbjl.community.util.CommunityConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,13 +22,16 @@ import java.util.Map;
  * 首页
  */
 @Controller
-public class HomeController {
+public class HomeController implements CommunityConstant {
 
     @Autowired
     private DiscussPostService discussPostService;
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private LikeService likeService;
 
     @RequestMapping(path = "/index",method = RequestMethod.GET)
     //返回的是网页，不用加@ResponseBody注解
@@ -44,6 +49,10 @@ public class HomeController {
                 map.put("post",post);
                 User user = userService.findUserById(post.getUserId());
                 map.put("user",user);
+
+                //帖子获赞数量
+                long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId());
+                map.put("likeCount",likeCount);
                 discussPosts.add(map);
             }
         }
