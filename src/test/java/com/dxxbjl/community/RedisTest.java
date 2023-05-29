@@ -113,14 +113,19 @@ public class RedisTest {
         System.out.println(operations.get());
     }
 
-    //编程式事务
+    //在Redis中执行编程式事务 确保ACID
     @Test
     public void testTransactional(){
+        //通过使用redisTemplate对象的execute方法，可以执行一个Redis会话回调。
+        // 会话回调是一个接口，它定义了在Redis会话中执行的操作。
         Object obj= redisTemplate.execute(new SessionCallback() {
             @Override
             public Object execute(RedisOperations operations) throws DataAccessException {
                 String redisKey = "test:tx";
 
+                //通过调用multi()方法，开始了一个Redis事务。
+                // 在事务中，连续执行了三个操作，分别是将"张三"、"lisi"和"王五"添加到名为redisKey的集合中，
+                // 使用opsForSet()方法获取集合操作对象，然后调用add()方法进行添加操作。
                 operations.multi();
 
                 operations.opsForSet().add(redisKey,"张三");
@@ -128,6 +133,7 @@ public class RedisTest {
                 operations.opsForSet().add(redisKey,"王五");
 
                 System.out.println(operations.opsForSet().members(redisKey));
+                //最后，通过调用exec()方法提交事务，并将事务执行的结果返回。
                 return operations.exec();
             }
         });

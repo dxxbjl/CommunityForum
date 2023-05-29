@@ -2,8 +2,10 @@ package com.dxxbjl.community.controller;
 
 import com.dxxbjl.community.annotation.LoginRequired;
 import com.dxxbjl.community.entity.User;
+import com.dxxbjl.community.service.FollowService;
 import com.dxxbjl.community.service.LikeService;
 import com.dxxbjl.community.service.UserService;
+import com.dxxbjl.community.util.CommunityConstant;
 import com.dxxbjl.community.util.CommunityUtil;
 import com.dxxbjl.community.util.HostHolder;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +30,7 @@ import java.io.OutputStream;
 
 @Controller
 @RequestMapping("/user")
-public class UserController {
+public class UserController implements CommunityConstant {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
@@ -49,6 +51,9 @@ public class UserController {
 
     @Autowired
     private LikeService likeService;
+
+    @Autowired
+    private FollowService followService;
 
     /**
      * 进入设置头像页
@@ -144,6 +149,20 @@ public class UserController {
         //点赞数量
         int likeCount = likeService.findUserLikeCount(userId);
         model.addAttribute("likeCount",likeCount);
+
+        //关注数量
+        long followeeCount = followService.findFolloweeCount(userId, ENTITY_TYPE_USER);
+        model.addAttribute("followeeCount",followeeCount);
+        //粉丝数量
+        long followerCount = followService.findFollowerCount(ENTITY_TYPE_USER,userId);
+        model.addAttribute("followerCount",followerCount);
+        //是否关注
+        boolean hasFollowed = false;
+        if(hostHolder.getUser()!=null){
+            hasFollowed = followService.hasFollowed(hostHolder.getUser().getId(),ENTITY_TYPE_USER,userId);
+        }
+        model.addAttribute("hasFollowed",hasFollowed);
+
         return "/site/profile";
     }
 }
