@@ -30,4 +30,27 @@ public interface CommentMapper {
      * 增加评论
      */
     int insertComment(Comment comment);
+
+    /**
+     * 通过Id查找评论
+     * @param id
+     * @return
+     */
+    Comment selectCommentById(int id);
+
+    /**
+     * 通过用户查找评论
+     * @param userId
+     * @param offset
+     * @param limit
+     * @return
+     */
+    List<Comment> selectCommentsByUser(int userId, int offset, int limit);
+
+    /**
+     *
+     * @param userId
+     * @return
+     */
+    int selectCountByUser(int userId);
 }
