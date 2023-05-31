@@ -32,7 +32,7 @@
 							</li>
 							<!--判断登录，登陆了才显示消息	th:if="${loginUser!=null}"	-->
 							<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser}!=null">
-								<a class="nav-link position-relative" th:href="@{/letter/list}">消息<span class="badge badge-danger">12</span></a>
+								<a class="nav-link position-relative" th:href="@{/letter/list}">消息<span class="badge badge-danger" th:text="${allUnreadCount !=0 ?allUnreadCount :'' }">12</span></a>
 							</li>
 							<!--判断登录，登陆了不显示，不登录显示	th:if="${loginUser==null}"	-->
 							<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser}==null">
