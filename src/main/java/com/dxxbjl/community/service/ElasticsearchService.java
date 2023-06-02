@@ -91,8 +91,8 @@ public class ElasticsearchService {
                     String createTime = hit.getSourceAsMap().get("createTime").toString();
                     post.setCreateTime(new Date(Long.valueOf(createTime)));
 
-                    String communtCount = hit.getSourceAsMap().get("commentCount").toString();
-                    post.setCommentCount(Integer.valueOf(communtCount));
+                    String commentCount = hit.getSourceAsMap().get("commentCount").toString();
+                    post.setCommentCount(Integer.valueOf(commentCount));
 
                     //处理高亮显示结果
                     HighlightField titleField  = hit.getHighlightFields().get("title");
