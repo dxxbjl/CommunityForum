@@ -13,7 +13,7 @@ public interface DiscussPostMapper {
      * 查询出帖子
      * offset：起始行号，limit：
      * */
-    List<DiscussPost> selectDiscussPosts(int userId,int offset,int limit);
+    List<DiscussPost> selectDiscussPosts(int userId,int offset,int limit,int orderMode);
 
 
     /**
@@ -50,4 +50,6 @@ public interface DiscussPostMapper {
 
     //修改帖子状态
     int updateStatus(int id,int status);
+
+    int updateScore(int id,double score );
 }

@@ -9,7 +9,9 @@ import com.dxxbjl.community.service.UserService;
 import com.dxxbjl.community.util.CommunityConstant;
 import com.dxxbjl.community.util.CommunityUtil;
 import com.dxxbjl.community.util.HostHolder;
+import com.dxxbjl.community.util.RedisKeyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,6 +45,9 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private EventProducer eventProducer;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     /**
      * 发布帖子
      * @param title
@@ -71,6 +76,10 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityType(ENTITY_TYPE_POST)
                 .setEntityId(post.getId());
         eventProducer.fireEvent(event);
+
+        //计算帖子分数
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        redisTemplate.opsForSet().add(redisKey,post.getId());
 
         //报错的情况，之后统一单独处理
         return CommunityUtil.getJSONString(0,"发布成功！");
@@ -217,6 +226,10 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityType(ENTITY_TYPE_POST)
                 .setEntityId(id);
         eventProducer.fireEvent(event);
+
+        //计算帖子分数
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        redisTemplate.opsForSet().add(redisKey,id);
 
         return CommunityUtil.getJSONString(0,null,map);
     }
