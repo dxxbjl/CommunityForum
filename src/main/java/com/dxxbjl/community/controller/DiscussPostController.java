@@ -175,13 +175,19 @@ public class DiscussPostController implements CommunityConstant {
         return "/site/discuss-detail";
     }
 
-    //置顶
+    //置顶\取消置顶
     @RequestMapping(path = "/top",method = RequestMethod.POST)
     @ResponseBody
     public String setTop(int id){
-        discussPostService.updateType(id,1);//1为置顶 0为普通
+        DiscussPost discussPostById = discussPostService.findDiscussPostById(id);
+        //获取置顶状态，1为置顶，0为正常 1^1=0 0^1 =1
+        int type = discussPostById.getType()^1;
+        discussPostService.updateType(id,type);//1为置顶 0为普通
+        //返回的结果
+        Map<String,Object> map = new HashMap<>();
+        map.put("type",type);
 
-        //触发发帖事件
+        //触发发帖事件,更改帖子状态
         Event event = new Event()
                 .setTopic(TOPIC_PUBLISH)
                 .setUserId(hostHolder.getUser().getId())
@@ -189,14 +195,20 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityId(id);
         eventProducer.fireEvent(event);
 
-        return CommunityUtil.getJSONString(0);
+        return CommunityUtil.getJSONString(0,null,map);
     }
 
-    //加精
+    //加精、取消加精
     @RequestMapping(path = "/wonderful",method = RequestMethod.POST)
     @ResponseBody
     public String setWonderful(int id){
-        discussPostService.updateStatus(id,1);// 0为普通 1为精华 2为删除
+        DiscussPost discussPostById = discussPostService.findDiscussPostById(id);
+        int status = discussPostById.getStatus()^1;
+
+        discussPostService.updateStatus(id,status);// 0为普通 1为精华 2为删除
+        //返回的结果
+        Map<String,Object> map = new HashMap<>();
+        map.put("status",status);
 
         //触发发帖事件 同步到ES中
         Event event = new Event()
@@ -206,7 +218,7 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityId(id);
         eventProducer.fireEvent(event);
 
-        return CommunityUtil.getJSONString(0);
+        return CommunityUtil.getJSONString(0,null,map);
     }
 
     //删除

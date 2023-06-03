@@ -26,7 +26,7 @@ function like(btn,entityType,entityId,entityUserId,postId) {
     )
 }
 
-// 置顶
+// 置顶 与 取消置顶
 function setTop() {
     $.post(
         CONTEXT_PATH + "/discuss/top",
@@ -34,7 +34,7 @@ function setTop() {
         function(data) {
             data = $.parseJSON(data);
             if(data.code == 0) {
-                $("#topBtn").attr("disabled", "disabled");
+                $("#topBtn").attr(data.type ==1?'取消置顶':'置顶');
             } else {
                 alert(data.msg);
             }
@@ -42,7 +42,7 @@ function setTop() {
     );
 }
 
-// 加精
+// 加精 与取消加精
 function setWonderful() {
     $.post(
         CONTEXT_PATH + "/discuss/wonderful",
@@ -50,7 +50,7 @@ function setWonderful() {
         function(data) {
             data = $.parseJSON(data);
             if(data.code == 0) {
-                $("#wonderfulBtn").attr("disabled", "disabled");
+                $("#wonderfulBtn").attr(data.status == 1?'取消加精':'加精');
             } else {
                 alert(data.msg);
             }
